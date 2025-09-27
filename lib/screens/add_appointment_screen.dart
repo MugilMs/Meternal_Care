@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/appointment.dart';
-import '../theme/app_theme.dart';
+import '../theme/app_colors.dart';
 import '../widgets/app_header.dart';
 
 class AddAppointmentScreen extends StatefulWidget {
@@ -74,9 +74,9 @@ class _AddAppointmentScreenState extends State<AddAppointmentScreen> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: ColorScheme.light(
-              primary: AppTheme.primaryColor,
+              primary: AppColors.primary,
               onPrimary: Colors.white,
-              onSurface: AppTheme.textPrimaryColor,
+              onSurface: AppColors.textPrimary,
             ),
           ),
           child: child!,
@@ -100,9 +100,9 @@ class _AddAppointmentScreenState extends State<AddAppointmentScreen> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: ColorScheme.light(
-              primary: AppTheme.primaryColor,
+              primary: AppColors.primary,
               onPrimary: Colors.white,
-              onSurface: AppTheme.textPrimaryColor,
+              onSurface: AppColors.textPrimary,
             ),
           ),
           child: child!,
@@ -151,7 +151,7 @@ class _AddAppointmentScreenState extends State<AddAppointmentScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: AppColors.background,
       appBar: AppHeader(
         title: "Add Appointment",
         currentPage: "appointments",
@@ -379,7 +379,7 @@ class _AddAppointmentScreenState extends State<AddAppointmentScreen> {
                   child: ElevatedButton(
                     onPressed: _saveAppointment,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.primaryColor,
+                      backgroundColor: AppColors.primary,
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),

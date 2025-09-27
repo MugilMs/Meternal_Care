@@ -3,7 +3,7 @@ import 'package:percent_indicator/linear_percent_indicator.dart';
 import '../models/health_tip.dart';
 import '../models/appointment.dart';
 import '../models/emergency_contact.dart';
-import '../theme/app_theme.dart';
+import '../theme/app_colors.dart';
 import '../widgets/health_tip_card.dart';
 import '../widgets/app_header.dart';
 import '../utils/ui_helpers.dart';
@@ -79,7 +79,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: AppColors.background,
       appBar: AppHeader(
         title: "MaternalCare",
         currentPage: "dashboard",
@@ -143,7 +143,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           style: const TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
-            color: AppTheme.textPrimaryColor,
+            color: AppColors.textPrimary,
           ),
         ),
         const SizedBox(height: 4),
@@ -151,7 +151,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           "You're in week $currentWeek of your pregnancy journey",
           style: const TextStyle(
             fontSize: 16,
-            color: AppTheme.textSecondaryColor,
+            color: AppColors.textSecondary,
           ),
         ),
         const SizedBox(height: 16),
@@ -166,7 +166,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               percent: currentWeek / 40,
               backgroundColor: Colors.grey.shade200,
               linearGradient: const LinearGradient(
-                colors: [AppTheme.primaryColor, AppTheme.secondaryColor],
+                colors: [AppColors.primary, AppColors.secondary],
               ),
               barRadius: const Radius.circular(8),
               animation: true,
@@ -177,7 +177,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               "$currentWeek of 40 weeks completed",
               style: const TextStyle(
                 fontSize: 14,
-                color: AppTheme.textSecondaryColor,
+                color: AppColors.textSecondary,
               ),
             ),
           ],
@@ -205,7 +205,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   children: [
                     const Icon(
                       Icons.favorite,
-                      color: AppTheme.primaryColor,
+                      color: AppColors.primary,
                       size: 20,
                     ),
                     const SizedBox(width: 8),
@@ -261,15 +261,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     _buildQuickActionButton(
                       icon: Icons.calendar_month,
                       label: "Schedule",
-                      color: AppTheme.primaryColor,
+                      color: AppColors.primary,
                       onTap: () {
-                        UIHelpers.showWorkInProgressDialog(context);
+                        Navigator.pushNamed(context, '/appointments');
                       },
                     ),
                     _buildQuickActionButton(
                       icon: Icons.forum,
                       label: "Community",
-                      color: AppTheme.greenColor,
+                      color: AppColors.success,
                       onTap: () {
                         UIHelpers.showWorkInProgressDialog(context);
                       },
@@ -277,17 +277,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     _buildQuickActionButton(
                       icon: Icons.location_on,
                       label: "Find Hospitals",
-                      color: AppTheme.accentColor,
+                      color: AppColors.accent,
                       onTap: () {
-                        UIHelpers.showWorkInProgressDialog(context);
+                        Navigator.pushNamed(context, '/hospitals');
                       },
                     ),
                     _buildQuickActionButton(
-                      icon: Icons.person,
-                      label: "Consult Doctor",
-                      color: AppTheme.secondaryColor,
+                      icon: Icons.account_balance,
+                      label: "Gov Schemes",
+                      color: AppColors.warning,
                       onTap: () {
-                        UIHelpers.showWorkInProgressDialog(context);
+                        Navigator.pushNamed(context, '/government-schemes');
                       },
                     ),
                   ],
@@ -318,7 +318,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   children: [
                     const Icon(
                       Icons.calendar_today,
-                      color: AppTheme.accentColor,
+                      color: AppColors.accent,
                       size: 20,
                     ),
                     const SizedBox(width: 8),
@@ -338,7 +338,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       UIHelpers.showWorkInProgressDialog(context);
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.accentColor,
+                      backgroundColor: AppColors.accent,
                       foregroundColor: Colors.white,
                     ),
                     child: const Text("Schedule New Appointment"),
@@ -365,7 +365,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 Text(
                   "Emergency Contacts",
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: AppTheme.redColor,
+                    color: AppColors.error,
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -420,16 +420,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
     
     switch (appointment.status) {
       case 'Confirmed':
-        bgColor = AppTheme.confirmedColor;
-        textColor = AppTheme.confirmedTextColor;
+        bgColor = AppColors.success;
+        textColor = Colors.white;
         break;
       case 'Pending':
-        bgColor = AppTheme.pendingColor;
-        textColor = AppTheme.pendingTextColor;
+        bgColor = AppColors.warning;
+        textColor = Colors.white;
         break;
       default:
-        bgColor = AppTheme.completedColor;
-        textColor = AppTheme.completedTextColor;
+        bgColor = AppColors.success;
+        textColor = Colors.white;
     }
     
     return Container(
@@ -485,9 +485,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildEmergencyContactItem(EmergencyContact contact) {
     final bool isEmergency = contact.type == 'emergency';
-    final Color bgColor = isEmergency ? AppTheme.redColor.withOpacity(0.1) : Colors.orange.shade50;
-    final Color borderColor = isEmergency ? AppTheme.redColor.withOpacity(0.3) : Colors.orange.shade200;
-    final Color textColor = isEmergency ? AppTheme.redColor : Colors.orange.shade900;
+    final Color bgColor = isEmergency ? AppColors.error.withOpacity(0.1) : Colors.orange.shade50;
+    final Color borderColor = isEmergency ? AppColors.error.withOpacity(0.3) : Colors.orange.shade200;
+    final Color textColor = isEmergency ? AppColors.error : Colors.orange.shade900;
     
     return Container(
       margin: const EdgeInsets.only(bottom: 12),

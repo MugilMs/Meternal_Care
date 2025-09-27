@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
@@ -9,6 +10,7 @@ import 'package:womb_wisdom_flutter/models/user_profile.dart';
 import 'package:womb_wisdom_flutter/providers/user_provider.dart';
 import 'package:womb_wisdom_flutter/screens/login_screen.dart';
 import 'package:womb_wisdom_flutter/services/supabase_service.dart';
+import '../theme/app_colors.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -40,6 +42,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _loadUserProfile() async {
+    if (!mounted) return;
+    
     setState(() {
       _isLoading = true;
       _hasError = false;
@@ -58,23 +62,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
           });
           // Navigate to login after a short delay
           Future.delayed(const Duration(milliseconds: 100), () {
-            _navigateToLogin();
+            if (mounted) _navigateToLogin();
           });
         }
         return;
       }
       
-      // Ensure database tables exist
-      try {
-        await supabaseService.ensureDatabaseSetup();
-        print('Database setup completed');
-      } catch (e) {
-        print('Error setting up database: $e');
-        // Continue anyway, as the table might already exist
-      }
-      
-      // Try to load profile from Supabase
-      await userProvider.loadUserProfile();
+      // Try to load profile from Supabase with timeout
+      await Future.any([
+        userProvider.loadUserProfile(),
+        Future.delayed(const Duration(seconds: 10), () => throw TimeoutException('Profile loading timeout', const Duration(seconds: 10)))
+      ]);
       
       // If profile loaded successfully
       if (userProvider.userProfile != null) {
@@ -86,50 +84,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
         }
       } else {
         // If no profile exists in database, create one with default data
-        print('No profile found, creating a new one...');
-        
-        // Create a profile with default values
         final mockProfile = _getMockProfile();
         
-        // Save the profile to Supabase
-        try {
-          await userProvider.updateUserProfile(mockProfile.toJson());
-          print('Profile created successfully');
-          
-          // Reload the profile
-          await userProvider.loadUserProfile();
-          
-          if (mounted) {
-            setState(() {
-              _isLoading = false;
-              _populateFields(userProvider.userProfile ?? mockProfile);
-            });
-            
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Created new profile with default values'),
-                backgroundColor: Colors.blue,
-              ),
-            );
-          }
-        } catch (e) {
-          print('Error creating profile: $e');
-          if (mounted) {
-            setState(() {
-              _isLoading = false;
-              _hasError = true;
-              _errorMessage = 'Error creating profile: $e';
-            });
-          }
+        // Use mock profile immediately for better UX
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+            _populateFields(mockProfile);
+          });
         }
+        
+        // Save the profile to Supabase in background
+        userProvider.updateUserProfile(mockProfile.toJson()).catchError((e) {
+          print('Background profile creation failed: $e');
+        });
       }
     } catch (e) {
       print('Error loading profile: $e');
+      // Use mock profile as fallback
+      final mockProfile = _getMockProfile();
       if (mounted) {
         setState(() {
           _isLoading = false;
-          _hasError = true;
-          _errorMessage = 'Failed to load profile: ${e.toString()}';
+          _hasError = false; // Don't show error, use mock data instead
+          _populateFields(mockProfile);
         });
       }
     }
@@ -452,40 +430,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        backgroundColor: const Color(0xFFF8F9FA),
-        appBar: AppBar(
-          backgroundColor: Colors.white,
-          elevation: 0,
-          automaticallyImplyLeading: false,
-          title: Row(
-            children: [
-              IconButton(
-                icon: const Icon(Icons.arrow_back_ios_new, size: 20, color: Color(0xFF444444)),
-                onPressed: () => Navigator.of(context).pop(),
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-              ),
-              const SizedBox(width: 8),
-              const Icon(
-                Icons.favorite,
-                color: Color(0xFFFF6B6B),
-                size: 22,
-              ),
-              const SizedBox(width: 8),
-              const Text(
-                'Profile',
-                style: TextStyle(
-                  color: Color(0xFF444444),
-                  fontWeight: FontWeight.bold,
-                  fontSize: 20,
-                ),
-              ),
-            ],
-          ),
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios, color: AppColors.textPrimary),
+          onPressed: () => Navigator.pushReplacementNamed(context, '/'),
         ),
-        body: _isLoading
+        title: Row(
+          children: [
+            const SizedBox(width: 8),
+            const Icon(
+              Icons.favorite,
+              color: Color(0xFFFF6B6B),
+              size: 22,
+            ),
+            const SizedBox(width: 8),
+            const Text(
+              'Profile',
+              style: TextStyle(
+                color: Color(0xFF444444),
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+              ),
+            ),
+          ],
+        ),
+      ),
+      body: SafeArea(
+        child: _isLoading
             ? const Center(
                 child: CircularProgressIndicator(
                   valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF6B6B)),
@@ -596,6 +571,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                             width: 120,
                                             height: 120,
                                             fit: BoxFit.cover,
+                                            loadingBuilder: (context, child, loadingProgress) {
+                                              if (loadingProgress == null) return child;
+                                              return const CircularProgressIndicator(
+                                                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF6B6B)),
+                                              );
+                                            },
                                             errorBuilder: (context, error, stackTrace) {
                                               return const Icon(Icons.person, size: 60, color: Color(0xFFFF6B6B));
                                             },

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../widgets/app_header.dart';
-import '../theme/app_theme.dart';
+import '../theme/app_colors.dart';
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({Key? key}) : super(key: key);
@@ -37,7 +37,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: AppColors.background,
       appBar: AppHeader(
         title: "Notifications",
         currentPage: "notifications",
@@ -99,7 +99,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(
-          color: notification.isRead ? Colors.transparent : AppTheme.primaryColor,
+          color: notification.isRead ? Colors.transparent : AppColors.primary,
           width: notification.isRead ? 0 : 1,
         ),
       ),
@@ -137,7 +137,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                             width: 8,
                             height: 8,
                             decoration: BoxDecoration(
-                              color: AppTheme.primaryColor,
+                              color: AppColors.primary,
                               shape: BoxShape.circle,
                             ),
                           ),
@@ -188,7 +188,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         break;
       default:
         iconData = Icons.notifications;
-        iconColor = AppTheme.primaryColor;
+        iconColor = AppColors.primary;
     }
 
     return Container(

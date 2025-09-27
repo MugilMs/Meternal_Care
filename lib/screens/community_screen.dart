@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
-import '../theme/app_theme.dart';
+import '../models/community_post.dart';
+import '../services/community_service.dart';
+import '../theme/app_colors.dart';
 import '../widgets/app_header.dart';
 import '../utils/ui_helpers.dart';
+import 'add_community_post_screen.dart';
 
 class CommunityScreen extends StatefulWidget {
   const CommunityScreen({Key? key}) : super(key: key);
@@ -13,11 +16,18 @@ class CommunityScreen extends StatefulWidget {
 class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final TextEditingController _searchController = TextEditingController();
+  final CommunityService _communityService = CommunityService();
+  
+  List<CommunityPost> _discussions = [];
+  List<CommunityPost> _groups = [];
+  List<CommunityPost> _events = [];
+  bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+    _loadCommunityPosts();
   }
 
   @override
@@ -30,7 +40,7 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: AppColors.background,
       appBar: AppHeader(
         title: "Community",
         currentPage: "community",
@@ -50,7 +60,7 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
-                      color: AppTheme.textPrimaryColor,
+                      color: AppColors.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -58,7 +68,7 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
                     "Connect with other expectant mothers and share experiences",
                     style: TextStyle(
                       fontSize: 16,
-                      color: AppTheme.textSecondaryColor,
+                      color: AppColors.textSecondary,
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -83,9 +93,9 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
             // Tab Bar
             TabBar(
               controller: _tabController,
-              labelColor: AppTheme.primaryColor,
-              unselectedLabelColor: AppTheme.textSecondaryColor,
-              indicatorColor: AppTheme.primaryColor,
+              labelColor: AppColors.primary,
+              unselectedLabelColor: AppColors.textSecondary,
+              indicatorColor: AppColors.primary,
               tabs: const [
                 Tab(text: "Discussions"),
                 Tab(text: "Groups"),
@@ -109,127 +119,154 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          UIHelpers.showWorkInProgressDialog(context);
+          _showAddPostScreen();
         },
-        backgroundColor: AppTheme.primaryColor,
+        backgroundColor: AppColors.primary,
         child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }
 
   Widget _buildDiscussionsTab() {
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        _buildDiscussionCard(
-          username: "Jessica M.",
-          title: "Tips for managing back pain in third trimester?",
-          content: "I'm 32 weeks pregnant and experiencing lower back pain. Any suggestions for relief that worked for you?",
-          likes: 24,
-          comments: 18,
-          timeAgo: "2 hours ago",
-          tags: ["Third Trimester", "Health"],
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    
+    if (_discussions.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text(
+              "No discussions yet",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () => _showAddPostScreen(initialPostType: 'discussion'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text("Start a Discussion"),
+            ),
+          ],
         ),
-        _buildDiscussionCard(
-          username: "Priya K.",
-          title: "Recommended prenatal vitamins",
-          content: "My doctor suggested changing my prenatal vitamins. What brands are you all using and why?",
-          likes: 15,
-          comments: 32,
-          timeAgo: "5 hours ago",
-          tags: ["Nutrition", "Health"],
-        ),
-        _buildDiscussionCard(
-          username: "Sarah J.",
-          title: "Baby shower ideas needed!",
-          content: "Planning my sister's baby shower next month. Looking for creative theme ideas that aren't too traditional.",
-          likes: 41,
-          comments: 27,
-          timeAgo: "1 day ago",
-          tags: ["Events", "Fun"],
-        ),
-        _buildDiscussionCard(
-          username: "Emily R.",
-          title: "Hospital bag checklist",
-          content: "First-time mom here! What are the must-haves for my hospital bag? I don't want to overpack but also don't want to miss anything important.",
-          likes: 56,
-          comments: 43,
-          timeAgo: "2 days ago",
-          tags: ["Preparation", "First-time Mom"],
-        ),
-      ],
+      );
+    }
+    
+    return RefreshIndicator(
+      onRefresh: _loadCommunityPosts,
+      child: ListView.builder(
+        padding: const EdgeInsets.all(16),
+        itemCount: _discussions.length,
+        itemBuilder: (context, index) {
+          final post = _discussions[index];
+          return _buildDiscussionCard(
+            username: post.username,
+            title: post.title,
+            content: post.content,
+            likes: post.likes,
+            comments: post.comments,
+            timeAgo: _getTimeAgo(post.createdAt),
+            tags: post.tags,
+          );
+        },
+      ),
     );
   }
 
   Widget _buildGroupsTab() {
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        _buildGroupCard(
-          name: "First-Time Moms",
-          members: 1243,
-          description: "Support group for women experiencing pregnancy for the first time",
-          image: "https://images.unsplash.com/photo-1490424660416-359912d314b3?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    
+    if (_groups.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text(
+              "No groups yet",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () => _showAddPostScreen(initialPostType: 'group'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text("Create a Group"),
+            ),
+          ],
         ),
-        _buildGroupCard(
-          name: "Natural Birth Support",
-          members: 856,
-          description: "Discussion and support for those planning natural childbirth",
-          image: "https://images.unsplash.com/photo-1516627145497-ae6968895b74?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-        ),
-        _buildGroupCard(
-          name: "Twin Pregnancy",
-          members: 437,
-          description: "Connect with other mothers expecting twins or multiples",
-          image: "https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-        ),
-        _buildGroupCard(
-          name: "Working Moms",
-          members: 1092,
-          description: "Balancing career and pregnancy/motherhood",
-          image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-        ),
-      ],
+      );
+    }
+    
+    return RefreshIndicator(
+      onRefresh: _loadCommunityPosts,
+      child: ListView.builder(
+        padding: const EdgeInsets.all(16),
+        itemCount: _groups.length,
+        itemBuilder: (context, index) {
+          final post = _groups[index];
+          return _buildGroupCard(
+            name: post.title,
+            members: post.members ?? 0,
+            description: post.content,
+            image: post.imageUrl ?? "https://images.unsplash.com/photo-1490424660416-359912d314b3?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+          );
+        },
+      ),
     );
   }
 
   Widget _buildEventsTab() {
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        _buildEventCard(
-          title: "Virtual Prenatal Yoga Class",
-          date: "May 15, 2024",
-          time: "10:00 AM - 11:00 AM",
-          location: "Online (Zoom)",
-          attendees: 24,
-          description: "Join our certified prenatal yoga instructor for a gentle session designed specifically for expectant mothers.",
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    
+    if (_events.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text(
+              "No events yet",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () => _showAddPostScreen(initialPostType: 'event'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text("Create an Event"),
+            ),
+          ],
         ),
-        _buildEventCard(
-          title: "Childbirth Preparation Workshop",
-          date: "May 22-23, 2024",
-          time: "9:00 AM - 3:00 PM",
-          location: "City General Hospital",
-          attendees: 18,
-          description: "Two-day comprehensive workshop covering labor, delivery, pain management techniques, and postpartum care.",
-        ),
-        _buildEventCard(
-          title: "New Parents Meetup",
-          date: "June 5, 2024",
-          time: "2:00 PM - 4:00 PM",
-          location: "Central Park Cafe",
-          attendees: 32,
-          description: "Casual gathering for expectant parents and those with newborns to connect and share experiences.",
-        ),
-        _buildEventCard(
-          title: "Breastfeeding Basics Class",
-          date: "June 12, 2024",
-          time: "6:00 PM - 8:00 PM",
-          location: "Women's Health Center",
-          attendees: 15,
-          description: "Learn essential breastfeeding techniques and tips from our certified lactation consultant.",
-        ),
-      ],
+      );
+    }
+    
+    return RefreshIndicator(
+      onRefresh: _loadCommunityPosts,
+      child: ListView.builder(
+        padding: const EdgeInsets.all(16),
+        itemCount: _events.length,
+        itemBuilder: (context, index) {
+          final post = _events[index];
+          return _buildEventCard(
+            title: post.title,
+            date: post.date ?? "",
+            time: post.time ?? "",
+            location: post.location ?? "",
+            attendees: post.attendees ?? 0,
+            description: post.content,
+          );
+        },
+      ),
     );
   }
 
@@ -257,11 +294,11 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
             Row(
               children: [
                 CircleAvatar(
-                  backgroundColor: AppTheme.primaryColor.withOpacity(0.2),
+                  backgroundColor: AppColors.primary.withOpacity(0.2),
                   child: Text(
                     username[0],
                     style: TextStyle(
-                      color: AppTheme.primaryColor,
+                      color: AppColors.primary,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -281,7 +318,7 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
                       Text(
                         timeAgo,
                         style: const TextStyle(
-                          color: AppTheme.textSecondaryColor,
+                          color: AppColors.textSecondary,
                           fontSize: 12,
                         ),
                       ),
@@ -293,7 +330,7 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
                   onPressed: () {
                     UIHelpers.showWorkInProgressDialog(context);
                   },
-                  color: AppTheme.textSecondaryColor,
+                  color: AppColors.textSecondary,
                 ),
               ],
             ),
@@ -305,7 +342,7 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: AppTheme.textPrimaryColor,
+                color: AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: 8),
@@ -313,7 +350,7 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
               content,
               style: const TextStyle(
                 fontSize: 14,
-                color: AppTheme.textPrimaryColor,
+                color: AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: 12),
@@ -332,25 +369,19 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
                 _buildActionButton(
                   icon: Icons.thumb_up_outlined,
                   label: likes.toString(),
-                  onPressed: () {
-                    UIHelpers.showWorkInProgressDialog(context);
-                  },
+                  onPressed: () => _toggleLike(likes),
                 ),
                 const SizedBox(width: 16),
                 _buildActionButton(
                   icon: Icons.chat_bubble_outline,
                   label: comments.toString(),
-                  onPressed: () {
-                    UIHelpers.showWorkInProgressDialog(context);
-                  },
+                  onPressed: () => _showComments(comments),
                 ),
                 const SizedBox(width: 16),
                 _buildActionButton(
                   icon: Icons.share_outlined,
                   label: "Share",
-                  onPressed: () {
-                    UIHelpers.showWorkInProgressDialog(context);
-                  },
+                  onPressed: () => _sharePost(title),
                 ),
               ],
             ),
@@ -402,14 +433,14 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: AppTheme.textPrimaryColor,
+                        color: AppColors.textPrimary,
                       ),
                     ),
                     Text(
                       "$members members",
                       style: const TextStyle(
                         fontSize: 14,
-                        color: AppTheme.textSecondaryColor,
+                        color: AppColors.textSecondary,
                       ),
                     ),
                   ],
@@ -421,7 +452,7 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
                   description,
                   style: const TextStyle(
                     fontSize: 14,
-                    color: AppTheme.textPrimaryColor,
+                    color: AppColors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -434,7 +465,7 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
                     UIHelpers.showWorkInProgressDialog(context);
                   },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.primaryColor,
+                      backgroundColor: AppColors.primary,
                       foregroundColor: Colors.white,
                     ),
                     child: const Text("Join Group"),
@@ -473,7 +504,7 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: AppTheme.textPrimaryColor,
+                color: AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: 12),
@@ -493,7 +524,7 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
               description,
               style: const TextStyle(
                 fontSize: 14,
-                color: AppTheme.textPrimaryColor,
+                color: AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: 16),
@@ -507,8 +538,8 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
                     UIHelpers.showWorkInProgressDialog(context);
                   },
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: AppTheme.primaryColor,
-                      side: BorderSide(color: AppTheme.primaryColor),
+                      foregroundColor: AppColors.primary,
+                      side: BorderSide(color: AppColors.primary),
                     ),
                     child: const Text("More Info"),
                   ),
@@ -520,7 +551,7 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
                     UIHelpers.showWorkInProgressDialog(context);
                   },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.primaryColor,
+                      backgroundColor: AppColors.primary,
                       foregroundColor: Colors.white,
                     ),
                     child: const Text("RSVP"),
@@ -538,14 +569,14 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: AppTheme.primaryColor.withOpacity(0.1),
+        color: AppColors.primary.withOpacity(0.1),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Text(
         tag,
         style: TextStyle(
           fontSize: 12,
-          color: AppTheme.primaryColor,
+          color: AppColors.primary,
           fontWeight: FontWeight.w500,
         ),
       ),
@@ -559,26 +590,22 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
   }) {
     return InkWell(
       onTap: onPressed,
-      borderRadius: BorderRadius.circular(8),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        child: Row(
-          children: [
-            Icon(
-              icon,
-              size: 18,
-              color: AppTheme.textSecondaryColor,
+      child: Row(
+        children: [
+          Icon(
+            icon,
+            size: 18,
+            color: AppColors.textSecondary,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 14,
+              color: AppColors.textSecondary,
             ),
-            const SizedBox(width: 4),
-            Text(
-              label,
-              style: const TextStyle(
-                fontSize: 14,
-                color: AppTheme.textSecondaryColor,
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -589,17 +616,200 @@ class _CommunityScreenState extends State<CommunityScreen> with SingleTickerProv
         Icon(
           icon,
           size: 16,
-          color: AppTheme.textSecondaryColor,
+          color: AppColors.textSecondary,
         ),
         const SizedBox(width: 8),
         Text(
           text,
           style: const TextStyle(
             fontSize: 14,
-            color: AppTheme.textSecondaryColor,
+            color: AppColors.textSecondary,
           ),
         ),
       ],
+    );
+  }
+  
+  // Load community posts from the database
+  Future<void> _loadCommunityPosts() async {
+    if (mounted) {
+      setState(() {
+        _isLoading = true;
+      });
+    }
+    
+    try {
+      // Load discussions
+      final discussions = await _communityService.getPostsByType('discussion');
+      
+      // Load groups
+      final groups = await _communityService.getPostsByType('group');
+      
+      // Load events
+      final events = await _communityService.getPostsByType('event');
+      
+      if (mounted) {
+        setState(() {
+          _discussions = discussions;
+          _groups = groups;
+          _events = events;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('Error loading community posts: $e');
+      
+      // Show error message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error loading community posts: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+  
+  // Show the add post screen
+  void _showAddPostScreen({String? initialPostType}) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AddCommunityPostScreen(
+          initialPostType: initialPostType ?? _getInitialPostTypeFromTab(),
+          onPostAdded: (post) {
+            // Add the new post to the appropriate list
+            if (mounted) {
+              setState(() {
+                switch (post.postType) {
+                  case 'discussion':
+                    _discussions.insert(0, post);
+                    break;
+                  case 'group':
+                    _groups.insert(0, post);
+                    break;
+                  case 'event':
+                    _events.insert(0, post);
+                    break;
+                }
+              });
+            }
+          },
+        ),
+      ),
+    );
+  }
+  
+  // Get the initial post type based on the current tab
+  String _getInitialPostTypeFromTab() {
+    switch (_tabController.index) {
+      case 0:
+        return 'discussion';
+      case 1:
+        return 'group';
+      case 2:
+        return 'event';
+      default:
+        return 'discussion';
+    }
+  }
+  
+  // Format the time ago string
+  String _getTimeAgo(DateTime dateTime) {
+    final now = DateTime.now();
+    final difference = now.difference(dateTime);
+    
+    if (difference.inDays > 365) {
+      return '${(difference.inDays / 365).floor()} ${(difference.inDays / 365).floor() == 1 ? 'year' : 'years'} ago';
+    } else if (difference.inDays > 30) {
+      return '${(difference.inDays / 30).floor()} ${(difference.inDays / 30).floor() == 1 ? 'month' : 'months'} ago';
+    } else if (difference.inDays > 0) {
+      return '${difference.inDays} ${difference.inDays == 1 ? 'day' : 'days'} ago';
+    } else if (difference.inHours > 0) {
+      return '${difference.inHours} ${difference.inHours == 1 ? 'hour' : 'hours'} ago';
+    } else if (difference.inMinutes > 0) {
+      return '${difference.inMinutes} ${difference.inMinutes == 1 ? 'minute' : 'minutes'} ago';
+    } else {
+      return 'Just now';
+    }
+  }
+
+  void _toggleLike(int currentLikes) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Post liked! Total likes: ${currentLikes + 1}'),
+        duration: const Duration(seconds: 2),
+        backgroundColor: AppColors.primary,
+      ),
+    );
+  }
+
+  void _showComments(int commentCount) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.7,
+        maxChildSize: 0.9,
+        minChildSize: 0.5,
+        expand: false,
+        builder: (context, scrollController) => Container(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Comments',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Expanded(
+                child: ListView.builder(
+                  controller: scrollController,
+                  itemCount: commentCount,
+                  itemBuilder: (context, index) => ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: AppColors.primary,
+                      child: Text('U${index + 1}'),
+                    ),
+                    title: Text('User ${index + 1}'),
+                    subtitle: Text('This is a sample comment ${index + 1}'),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _sharePost(String title) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Sharing: $title'),
+        duration: const Duration(seconds: 2),
+        backgroundColor: AppColors.accent,
+      ),
     );
   }
 }

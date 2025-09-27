@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:womb_wisdom_flutter/theme/app_theme.dart';
+import 'package:womb_wisdom_flutter/theme/app_colors.dart';
 
 class LoadingIndicator extends StatelessWidget {
   final double size;
@@ -8,7 +8,7 @@ class LoadingIndicator extends StatelessWidget {
   const LoadingIndicator({
     Key? key,
     this.size = 40.0,
-    this.color = AppTheme.primaryColor,
+    this.color = AppColors.primary,
   }) : super(key: key);
 
   @override

@@ -3,15 +3,21 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:womb_wisdom_flutter/providers/user_provider.dart';
 import 'package:womb_wisdom_flutter/services/supabase_service.dart';
+import 'package:womb_wisdom_flutter/services/database_setup.dart';
 import 'theme/app_theme.dart';
 import 'screens/home_screen.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/appointments_screen.dart';
 import 'screens/community_screen.dart';
-import 'screens/hospitals_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/notifications_screen.dart';
+import 'screens/splash_screen.dart';
+import 'screens/welcome_screen.dart';
+import 'screens/hospitals_screen.dart';
+import 'screens/health_tracking_screen.dart';
+import 'screens/ai_chatbot_screen.dart';
+import 'screens/government_schemes_screen.dart';
 import 'widgets/app_bottom_navigation.dart';
 
 void main() async {
@@ -28,7 +34,13 @@ void main() async {
   // Ensure database tables are created if user is authenticated
   if (supabaseService.isAuthenticated) {
     try {
+      // Initialize database tables including profiles
       await supabaseService.ensureDatabaseSetup();
+      
+      // Initialize community tables
+      final databaseSetup = DatabaseSetup();
+      await databaseSetup.initialize();
+      
       print('Database tables initialized successfully');
     } catch (e) {
       print('Error setting up database tables: $e');
@@ -50,14 +62,20 @@ class WombWisdomApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Womb Wisdom Wellbeing',
         debugShowCheckedModeBanner: false,
-        theme: AppTheme.getTheme(),
-        initialRoute: '/',
+        theme: AppTheme.lightTheme,
+        initialRoute: '/splash',
         routes: {
+          '/splash': (context) => const SplashScreen(),
+          '/welcome': (context) => const WelcomeScreen(),
           '/': (context) => const MainScreen(),
           '/profile': (context) => const ProfileScreen(),
           '/login': (context) => const LoginScreen(),
           '/appointments': (context) => const AppointmentsScreen(),
           '/notifications': (context) => const NotificationsScreen(),
+          '/health-tracking': (context) => const HealthTrackingScreen(),
+          '/ai-chatbot': (context) => const AIChatbotScreen(),
+          '/hospitals': (context) => const HospitalsScreen(),
+          '/government-schemes': (context) => const GovernmentSchemesScreen(),
         },
       ),
     );

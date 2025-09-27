@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:womb_wisdom_flutter/providers/user_provider.dart';
+import '../theme/app_colors.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -99,25 +100,43 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios, color: AppColors.textPrimary),
+          onPressed: () {
+            if (Navigator.canPop(context)) {
+              Navigator.pop(context);
+            } else {
+              Navigator.pushReplacementNamed(context, '/');
+            }
+          },
+        ),
+      ),
       body: SafeArea(
         child: Column(
           children: [
             // Professional header with gradient
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 24.0, horizontal: 24.0),
-              decoration: const BoxDecoration(
+              padding: const EdgeInsets.symmetric(vertical: 32.0, horizontal: 24.0),
+              decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Color(0xFFF8BBD0), Color(0xFFF48FB1)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    AppColors.primary.withOpacity(0.15),
+                    AppColors.primary.withOpacity(0.08),
+                    AppColors.background,
+                  ],
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black12,
-                    offset: Offset(0, 2),
-                    blurRadius: 4.0,
+                    color: AppColors.primary.withOpacity(0.1),
+                    offset: Offset(0, 4),
+                    blurRadius: 12.0,
                   ),
                 ],
               ),
@@ -142,7 +161,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                         ),
                         child: Icon(
                           Icons.favorite,
-                          color: Colors.pink[400],
+                          color: AppColors.primary,
                           size: 30,
                         ),
                       ),
@@ -152,7 +171,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                         style: TextStyle(
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: AppColors.textPrimary,
                           letterSpacing: 0.5,
                         ),
                       ),
@@ -167,7 +186,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                     style: TextStyle(
                       fontSize: 32,
                       fontWeight: FontWeight.w300,
-                      color: Colors.white,
+                      color: AppColors.textPrimary,
                       letterSpacing: 0.5,
                     ),
                   ),
@@ -176,7 +195,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                     style: TextStyle(
                       fontSize: 32,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: AppColors.textPrimary,
                       letterSpacing: 0.5,
                     ),
                   ),
@@ -212,7 +231,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                         style: TextStyle(
                           fontSize: 26,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF2D4356),
+                          color: AppColors.textPrimary,
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -221,7 +240,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                         'Sign in to continue your journey',
                         style: TextStyle(
                           fontSize: 16,
-                          color: Colors.grey[600],
+                          color: AppColors.textSecondary,
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -253,8 +272,8 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                               ),
                             ],
                           ),
-                          labelColor: Colors.pink[400],
-                          unselectedLabelColor: Colors.grey[600],
+                          labelColor: AppColors.primary,
+                          unselectedLabelColor: AppColors.textSecondary,
                           tabs: const [
                             Tab(text: 'Login'),
                             Tab(text: 'Sign Up'),
@@ -397,7 +416,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                     _rememberMe = value ?? false;
                   });
                 },
-                activeColor: Colors.pink[400],
+                activeColor: AppColors.primary,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
               ),
             ),
@@ -413,7 +432,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                   const SnackBar(content: Text('Forgot password feature coming soon')),
                 );
               },
-              style: TextButton.styleFrom(foregroundColor: Colors.pink[400]),
+              style: TextButton.styleFrom(foregroundColor: AppColors.primary),
               child: const Text(
                 'Forgot Password?',
                 style: TextStyle(fontWeight: FontWeight.w500),
@@ -430,7 +449,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
               onPressed: userProvider.isLoading ? null : _login,
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),
-                backgroundColor: Colors.pink[400],
+                backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 elevation: 2,
@@ -677,7 +696,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
               onPressed: userProvider.isLoading ? null : _signup,
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),
-                backgroundColor: Colors.pink[400],
+                backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 elevation: 2,

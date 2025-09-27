@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import '../widgets/app_header.dart';
-import '../theme/app_theme.dart';
-import '../models/appointment.dart';
-import 'add_appointment_screen.dart';
-import '../widgets/appointment_card.dart';
-import '../utils/ui_helpers.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/services.dart';
+import '../models/appointment.dart';
+import '../theme/app_colors.dart';
+import '../widgets/app_header.dart';
+import '../widgets/appointment_card.dart';
+import '../utils/ui_helpers.dart';
+import 'schedule_appointment_screen.dart';
 
 class AppointmentsScreen extends StatefulWidget {
   const AppointmentsScreen({Key? key}) : super(key: key);
@@ -118,7 +118,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> with TickerProv
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: AppColors.background,
       appBar: AppHeader(
         title: "My Appointments",
         currentPage: "appointments",
@@ -129,26 +129,11 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> with TickerProv
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => AddAppointmentScreen(
-                onAppointmentAdded: (newAppointment) {
-                  setState(() {
-                    // Add the new appointment to the list
-                    appointments.add(newAppointment);
-                    // Sort appointments by date
-                    appointments.sort((a, b) {
-                      final aDate = DateTime.parse(a.date);
-                      final bDate = DateTime.parse(b.date);
-                      return aDate.compareTo(bDate);
-                    });
-                    // Update the appointment groups
-                    _organizeAppointmentsByDate();
-                  });
-                },
-              ),
+              builder: (context) => const ScheduleAppointmentScreen(),
             ),
           );
         },
-        backgroundColor: AppTheme.primaryColor,
+        backgroundColor: AppColors.primary,
         child: const Icon(Icons.add),
       ),
       body: SafeArea(
@@ -175,8 +160,8 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> with TickerProv
                       icon: const Icon(Icons.calendar_month),
                       label: const Text("Calendar View"),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: _currentView == 'calendar' ? AppTheme.primaryColor : Colors.grey[200],
-                        foregroundColor: _currentView == 'calendar' ? Colors.white : AppTheme.textPrimaryColor,
+                        backgroundColor: _currentView == 'calendar' ? AppColors.primary : Colors.grey[200],
+                        foregroundColor: _currentView == 'calendar' ? Colors.white : AppColors.textPrimary,
                         elevation: _currentView == 'calendar' ? 2 : 0,
                       ),
                     ),
@@ -192,8 +177,8 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> with TickerProv
                       icon: const Icon(Icons.list),
                       label: const Text("List View"),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: _currentView == 'list' ? AppTheme.primaryColor : Colors.grey[200],
-                        foregroundColor: _currentView == 'list' ? Colors.white : AppTheme.textPrimaryColor,
+                        backgroundColor: _currentView == 'list' ? AppColors.primary : Colors.grey[200],
+                        foregroundColor: _currentView == 'list' ? Colors.white : AppColors.textPrimary,
                         elevation: _currentView == 'list' ? 2 : 0,
                       ),
                     ),
@@ -213,7 +198,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> with TickerProv
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: AppTheme.textPrimaryColor,
+                          color: AppColors.textPrimary,
                         ),
                       ),
                       Row(
@@ -311,20 +296,20 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> with TickerProv
                               outsideDaysVisible: true,
                               markersMaxCount: 3,
                               markerDecoration: const BoxDecoration(
-                                color: AppTheme.primaryColor,
+                                color: AppColors.primary,
                                 shape: BoxShape.circle,
                               ),
                               todayDecoration: BoxDecoration(
-                                color: AppTheme.primaryColor.withOpacity(0.15),
+                                color: AppColors.primary.withOpacity(0.15),
                                 shape: BoxShape.circle,
-                                border: Border.all(color: AppTheme.primaryColor, width: 1.5),
+                                border: Border.all(color: AppColors.primary, width: 1.5),
                               ),
-                              todayTextStyle: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.primaryColor),
+                              todayTextStyle: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.primary),
                               selectedDecoration: const BoxDecoration(
-                                color: AppTheme.primaryColor,
+                                color: AppColors.primary,
                                 shape: BoxShape.circle,
                               ),
-                              weekendTextStyle: const TextStyle(color: AppTheme.accentColor),
+                              weekendTextStyle: const TextStyle(color: AppColors.accent),
                               outsideTextStyle: TextStyle(color: Colors.grey[400]),
                             ),
                             calendarBuilders: CalendarBuilders(
@@ -361,13 +346,13 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> with TickerProv
                                   margin: const EdgeInsets.all(4),
                                   alignment: Alignment.center,
                                   decoration: BoxDecoration(
-                                    color: AppTheme.primaryColor.withOpacity(0.15),
+                                    color: AppColors.primary.withOpacity(0.15),
                                     shape: BoxShape.circle,
-                                    border: Border.all(color: AppTheme.primaryColor, width: 1.5),
+                                    border: Border.all(color: AppColors.primary, width: 1.5),
                                   ),
                                   child: Text(
                                     day.day.toString(),
-                                    style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.primaryColor),
+                                    style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.primary),
                                   ),
                                 );
                               },
@@ -376,11 +361,11 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> with TickerProv
                                   margin: const EdgeInsets.all(4),
                                   alignment: Alignment.center,
                                   decoration: BoxDecoration(
-                                    color: AppTheme.primaryColor,
+                                    color: AppColors.primary,
                                     shape: BoxShape.circle,
                                     boxShadow: [
                                       BoxShadow(
-                                        color: AppTheme.primaryColor.withOpacity(0.5),
+                                        color: AppColors.primary.withOpacity(0.5),
                                         blurRadius: 4,
                                         spreadRadius: 1,
                                       ),
@@ -471,10 +456,10 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> with TickerProv
                             spacing: 16,
                             runSpacing: 8,
                             children: [
-                              _buildLegendItem("Regular Checkup", AppTheme.primaryColor),
-                              _buildLegendItem("Ultrasound", AppTheme.accentColor),
-                              _buildLegendItem("Nutrition", AppTheme.greenColor),
-                              _buildLegendItem("Other", AppTheme.secondaryColor),
+                              _buildLegendItem("Regular Checkup", AppColors.primary),
+                              _buildLegendItem("Ultrasound", AppColors.accent),
+                              _buildLegendItem("Nutrition", AppColors.success),
+                              _buildLegendItem("Other", AppColors.secondary),
                             ],
                           ),
                         ],
@@ -495,7 +480,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> with TickerProv
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
-                          color: AppTheme.primaryColor,
+                          color: AppColors.primary,
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
@@ -513,7 +498,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> with TickerProv
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: AppTheme.textPrimaryColor,
+                          color: AppColors.textPrimary,
                         ),
                       ),
                     ],
@@ -530,12 +515,17 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> with TickerProv
                 margin: const EdgeInsets.symmetric(vertical: 16),
                 child: ElevatedButton.icon(
                   onPressed: () {
-                    UIHelpers.showWorkInProgressDialog(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const ScheduleAppointmentScreen(),
+                      ),
+                    );
                   },
                   icon: const Icon(Icons.add),
                   label: const Text("Schedule New Appointment"),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primaryColor,
+                    backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     elevation: 3,
@@ -590,7 +580,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> with TickerProv
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
-                                color: AppTheme.textPrimaryColor,
+                                color: AppColors.textPrimary,
                               ),
                             ),
                             const SizedBox(height: 8),
@@ -648,7 +638,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> with TickerProv
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: AppTheme.textPrimaryColor,
+              color: AppColors.textPrimary,
             ),
           ),
           const SizedBox(height: 8),
@@ -656,16 +646,21 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> with TickerProv
             "Schedule your first appointment to get started",
             style: TextStyle(
               fontSize: 16,
-              color: AppTheme.textSecondaryColor,
+              color: AppColors.textSecondary,
             ),
           ),
           const SizedBox(height: 24),
           ElevatedButton(
             onPressed: () {
-              UIHelpers.showWorkInProgressDialog(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ScheduleAppointmentScreen(),
+                ),
+              );
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primaryColor,
+              backgroundColor: AppColors.primary,
               foregroundColor: Colors.white,
             ),
             child: const Text("Schedule Appointment"),
@@ -692,7 +687,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> with TickerProv
               const SizedBox(height: 8),
               const Text(
                 "No appointments for this day",
-                style: TextStyle(color: AppTheme.textSecondaryColor),
+                style: TextStyle(color: AppColors.textSecondary),
               ),
             ],
           ),
@@ -765,7 +760,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> with TickerProv
             style: const TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w500,
-              color: AppTheme.textSecondaryColor,
+              color: AppColors.textSecondary,
             ),
           ),
         ],
@@ -776,13 +771,13 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> with TickerProv
   Color _getAppointmentColor(String appointmentType) {
     switch (appointmentType) {
       case 'Regular Checkup':
-        return AppTheme.primaryColor;
+        return AppColors.primary;
       case 'Ultrasound':
-        return AppTheme.accentColor;
+        return AppColors.accent;
       case 'Nutrition Consultation':
-        return AppTheme.greenColor;
+        return AppColors.success;
       default:
-        return AppTheme.secondaryColor;
+        return AppColors.secondary;
     }
   }
 }

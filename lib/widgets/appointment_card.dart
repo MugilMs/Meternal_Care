@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/appointment.dart';
-import '../theme/app_theme.dart';
+import '../theme/app_colors.dart';
 
 class AppointmentCard extends StatelessWidget {
   final Appointment appointment;
@@ -22,26 +22,26 @@ class AppointmentCard extends StatelessWidget {
   Color _getStatusColor() {
     switch (appointment.status) {
       case 'Confirmed':
-        return AppTheme.confirmedColor;
+        return AppColors.success;
       case 'Pending':
-        return AppTheme.pendingColor;
+        return AppColors.warning;
       case 'Completed':
-        return AppTheme.completedColor;
+        return AppColors.success;
       default:
-        return AppTheme.completedColor;
+        return AppColors.success;
     }
   }
 
   Color _getStatusTextColor() {
     switch (appointment.status) {
       case 'Confirmed':
-        return AppTheme.confirmedTextColor;
+        return Colors.white;
       case 'Pending':
-        return AppTheme.pendingTextColor;
+        return Colors.white;
       case 'Completed':
-        return AppTheme.completedTextColor;
+        return Colors.white;
       default:
-        return AppTheme.completedTextColor;
+        return Colors.white;
     }
   }
 
@@ -66,7 +66,7 @@ class AppointmentCard extends StatelessWidget {
                 const Icon(
                   Icons.calendar_today,
                   size: 18,
-                  color: AppTheme.accentColor,
+                  color: AppColors.accent,
                 ),
                 const SizedBox(width: 8),
                 Text(
@@ -74,7 +74,7 @@ class AppointmentCard extends StatelessWidget {
                   style: const TextStyle(
                     fontWeight: FontWeight.w600,
                     fontSize: 16,
-                    color: AppTheme.textPrimaryColor,
+                    color: AppColors.textPrimary,
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -101,14 +101,14 @@ class AppointmentCard extends StatelessWidget {
                 const Icon(
                   Icons.person_outline,
                   size: 16,
-                  color: AppTheme.textSecondaryColor,
+                  color: AppColors.textSecondary,
                 ),
                 const SizedBox(width: 8),
                 Text(
                   appointment.doctor,
                   style: const TextStyle(
                     fontSize: 14,
-                    color: AppTheme.textSecondaryColor,
+                    color: AppColors.textSecondary,
                   ),
                 ),
                 const SizedBox(width: 4),
@@ -116,7 +116,7 @@ class AppointmentCard extends StatelessWidget {
                   '•',
                   style: TextStyle(
                     fontSize: 14,
-                    color: AppTheme.textTertiaryColor,
+                    color: AppColors.textTertiary,
                   ),
                 ),
                 const SizedBox(width: 4),
@@ -124,7 +124,7 @@ class AppointmentCard extends StatelessWidget {
                   appointment.specialty,
                   style: const TextStyle(
                     fontSize: 14,
-                    color: AppTheme.textSecondaryColor,
+                    color: AppColors.textSecondary,
                   ),
                 ),
               ],
@@ -135,14 +135,14 @@ class AppointmentCard extends StatelessWidget {
                 const Icon(
                   Icons.access_time,
                   size: 16,
-                  color: AppTheme.textSecondaryColor,
+                  color: AppColors.textSecondary,
                 ),
                 const SizedBox(width: 8),
                 Text(
                   '$formattedDate at ${appointment.time}',
                   style: const TextStyle(
                     fontSize: 14,
-                    color: AppTheme.textSecondaryColor,
+                    color: AppColors.textSecondary,
                   ),
                 ),
               ],
@@ -153,14 +153,14 @@ class AppointmentCard extends StatelessWidget {
                 const Icon(
                   Icons.location_on_outlined,
                   size: 16,
-                  color: AppTheme.textSecondaryColor,
+                  color: AppColors.textSecondary,
                 ),
                 const SizedBox(width: 8),
                 Text(
                   appointment.location,
                   style: const TextStyle(
                     fontSize: 14,
-                    color: AppTheme.textSecondaryColor,
+                    color: AppColors.textSecondary,
                   ),
                 ),
               ],
@@ -178,7 +178,7 @@ class AppointmentCard extends StatelessWidget {
                   OutlinedButton(
                     onPressed: onCancel,
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: AppTheme.redColor,
+                      foregroundColor: AppColors.error,
                       side: const BorderSide(color: Color(0xFFFFE4E6)), // red-100
                     ),
                     child: const Text('Cancel'),

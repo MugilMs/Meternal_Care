@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/health_tip.dart';
-import '../theme/app_theme.dart';
+import '../theme/app_colors.dart';
 
 class HealthTipCard extends StatelessWidget {
   final HealthTip tip;
@@ -13,13 +13,13 @@ class HealthTipCard extends StatelessWidget {
   Color _getCategoryColor() {
     switch (tip.category) {
       case 'Development':
-        return AppTheme.primaryColor;
+        return AppColors.primary;
       case 'Nutrition':
-        return AppTheme.greenColor;
+        return AppColors.success;
       case 'Exercise':
-        return AppTheme.accentColor;
+        return AppColors.accent;
       default:
-        return AppTheme.secondaryColor;
+        return AppColors.secondary;
     }
   }
 
@@ -56,7 +56,7 @@ class HealthTipCard extends StatelessWidget {
                 style: const TextStyle(
                   fontWeight: FontWeight.w600,
                   fontSize: 16,
-                  color: AppTheme.textPrimaryColor,
+                  color: AppColors.textPrimary,
                 ),
               ),
               Container(
@@ -81,7 +81,7 @@ class HealthTipCard extends StatelessWidget {
             tip.content,
             style: const TextStyle(
               fontSize: 14,
-              color: AppTheme.textSecondaryColor,
+              color: AppColors.textSecondary,
             ),
           ),
         ],

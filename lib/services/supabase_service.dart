@@ -181,17 +181,50 @@ class SupabaseService {
         // Create the profiles table
         await _client.rpc('create_profiles_table', params: {});
         
-        // Try the update again
-        await _client
-            .from('profiles')
-            .upsert({
-              'id': currentUser!.id,
-              ...data,
-              'updated_at': DateTime.now().toIso8601String(),
-            });
+        final result = await _client.auth.signUp(
+          email: data['email'],
+          password: 'password',
+        );
+        
+        if (result.user != null) {
+          // Create user profile
+          await createUserProfile(result.user!.id, {
+            'email': data['email'],
+            'full_name': data['full_name'],
+            'created_at': DateTime.now().toIso8601String(),
+          });
+          
+          return;
+        }
       } else {
         rethrow;
       }
+    }
+  }
+  
+  Future<void> createUserProfile(String id, Map<String, dynamic> data) async {
+    try {
+      // First check if the profiles table exists
+      try {
+        await _client.from('profiles').select('id').limit(1);
+      } catch (e) {
+        if (e.toString().contains('relation "public.profiles" does not exist')) {
+          // Create the profiles table if it doesn't exist
+          print('Creating profiles table...');
+          await _client.rpc('create_profiles_table');
+        }
+      }
+      
+      // Insert the profile data
+      await _client
+          .from('profiles')
+          .insert({
+            'id': id,
+            ...data,
+          });
+    } catch (e) {
+      print('Error creating user profile: $e');
+      rethrow;
     }
   }
   

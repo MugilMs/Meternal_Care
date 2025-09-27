@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:womb_wisdom_flutter/providers/user_provider.dart';
-import 'package:womb_wisdom_flutter/theme/app_theme.dart';
+import 'package:womb_wisdom_flutter/theme/app_colors.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({Key? key}) : super(key: key);
@@ -72,13 +72,13 @@ class _SignupScreenState extends State<SignupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: AppTheme.textPrimaryColor),
-          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.arrow_back_ios, color: AppColors.textPrimary),
+          onPressed: () => Navigator.pushReplacementNamed(context, '/'),
         ),
       ),
       body: SafeArea(
@@ -97,14 +97,14 @@ class _SignupScreenState extends State<SignupScreen> {
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
-                      color: AppTheme.textPrimaryColor,
+                      color: AppColors.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 8),
                   const Text(
                     'Sign up to start your pregnancy journey',
                     style: TextStyle(
-                      color: AppTheme.textSecondaryColor,
+                      color: AppColors.textSecondary,
                     ),
                   ),
                   const SizedBox(height: 32),
@@ -219,18 +219,18 @@ class _SignupScreenState extends State<SignupScreen> {
                             _agreeToTerms = value ?? false;
                           });
                         },
-                        activeColor: AppTheme.primaryColor,
+                        activeColor: AppColors.primary,
                       ),
                       Expanded(
                         child: RichText(
                           text: TextSpan(
                             text: 'I agree to the ',
-                            style: const TextStyle(color: AppTheme.textSecondaryColor),
+                            style: const TextStyle(color: AppColors.textSecondary),
                             children: [
                               TextSpan(
                                 text: 'Terms of Service',
                                 style: const TextStyle(
-                                  color: AppTheme.primaryColor,
+                                  color: AppColors.primary,
                                   fontWeight: FontWeight.bold,
                                 ),
                                 // TODO: Add gesture recognizer for terms of service
@@ -239,7 +239,7 @@ class _SignupScreenState extends State<SignupScreen> {
                               TextSpan(
                                 text: 'Privacy Policy',
                                 style: const TextStyle(
-                                  color: AppTheme.primaryColor,
+                                  color: AppColors.primary,
                                   fontWeight: FontWeight.bold,
                                 ),
                                 // TODO: Add gesture recognizer for privacy policy
@@ -258,7 +258,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       return ElevatedButton(
                         onPressed: userProvider.isLoading ? null : _signUp,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.primaryColor,
+                          backgroundColor: AppColors.primary,
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
@@ -295,7 +295,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         child: const Text(
                           'Sign In',
                           style: TextStyle(
-                            color: AppTheme.primaryColor,
+                            color: AppColors.primary,
                             fontWeight: FontWeight.bold,
                           ),
                         ),

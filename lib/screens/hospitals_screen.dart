@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../models/hospital.dart';
-import '../theme/app_theme.dart';
+import '../theme/app_colors.dart';
 import '../widgets/app_header.dart';
 import '../utils/ui_helpers.dart';
+import 'hospital_details_screen.dart';
 
 class HospitalsScreen extends StatefulWidget {
   const HospitalsScreen({Key? key}) : super(key: key);
@@ -100,10 +102,11 @@ class _HospitalsScreenState extends State<HospitalsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: AppColors.background,
       appBar: AppHeader(
         title: "Find Hospitals",
         currentPage: "hospitals",
+        showBackButton: true,
       ),
       body: SafeArea(
         child: Column(
@@ -120,7 +123,7 @@ class _HospitalsScreenState extends State<HospitalsScreen> {
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
-                      color: AppTheme.textPrimaryColor,
+                      color: AppColors.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -128,7 +131,7 @@ class _HospitalsScreenState extends State<HospitalsScreen> {
                     "Discover hospitals and healthcare providers near you",
                     style: TextStyle(
                       fontSize: 16,
-                      color: AppTheme.textSecondaryColor,
+                      color: AppColors.textSecondary,
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -167,11 +170,11 @@ class _HospitalsScreenState extends State<HospitalsScreen> {
                         });
                       }
                     },
-                    selectedColor: AppTheme.primaryColor.withOpacity(0.2),
+                    selectedColor: AppColors.primary.withOpacity(0.2),
                     labelStyle: TextStyle(
                       color: _selectedFilter == filter 
-                          ? AppTheme.primaryColor 
-                          : AppTheme.textSecondaryColor,
+                          ? AppColors.primary 
+                          : AppColors.textSecondary,
                       fontWeight: _selectedFilter == filter 
                           ? FontWeight.bold 
                           : FontWeight.normal,
@@ -193,7 +196,7 @@ class _HospitalsScreenState extends State<HospitalsScreen> {
                 icon: const Icon(Icons.map),
                 label: const Text("View on Map"),
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: AppTheme.primaryColor,
+                  foregroundColor: AppColors.primary,
                 ),
               ),
             ),
@@ -255,7 +258,7 @@ class _HospitalsScreenState extends State<HospitalsScreen> {
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: AppTheme.textPrimaryColor,
+                          color: AppColors.textPrimary,
                         ),
                       ),
                     ),
@@ -272,7 +275,7 @@ class _HospitalsScreenState extends State<HospitalsScreen> {
                           style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
-                            color: AppTheme.textPrimaryColor,
+                            color: AppColors.textPrimary,
                           ),
                         ),
                       ],
@@ -287,7 +290,7 @@ class _HospitalsScreenState extends State<HospitalsScreen> {
                     const Icon(
                       Icons.location_on,
                       size: 16,
-                      color: AppTheme.textSecondaryColor,
+                      color: AppColors.textSecondary,
                     ),
                     const SizedBox(width: 4),
                     Expanded(
@@ -295,7 +298,7 @@ class _HospitalsScreenState extends State<HospitalsScreen> {
                         hospital.address,
                         style: const TextStyle(
                           fontSize: 14,
-                          color: AppTheme.textSecondaryColor,
+                          color: AppColors.textSecondary,
                         ),
                       ),
                     ),
@@ -304,7 +307,7 @@ class _HospitalsScreenState extends State<HospitalsScreen> {
                       "${hospital.distance} km",
                       style: const TextStyle(
                         fontSize: 14,
-                        color: AppTheme.textSecondaryColor,
+                        color: AppColors.textSecondary,
                       ),
                     ),
                   ],
@@ -317,7 +320,7 @@ class _HospitalsScreenState extends State<HospitalsScreen> {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: AppTheme.textPrimaryColor,
+                    color: AppColors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -333,13 +336,11 @@ class _HospitalsScreenState extends State<HospitalsScreen> {
                   children: [
                     Expanded(
                       child: OutlinedButton.icon(
-                        onPressed: () {
-                          UIHelpers.showWorkInProgressDialog(context);
-                        },
+                        onPressed: () => _makePhoneCall(hospital.phone),
                         icon: const Icon(Icons.phone),
                         label: const Text("Call"),
                         style: OutlinedButton.styleFrom(
-                          foregroundColor: AppTheme.accentColor,
+                          foregroundColor: AppColors.accent,
                         ),
                       ),
                     ),
@@ -347,12 +348,17 @@ class _HospitalsScreenState extends State<HospitalsScreen> {
                     Expanded(
                       child: ElevatedButton.icon(
                         onPressed: () {
-                          UIHelpers.showWorkInProgressDialog(context);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => HospitalDetailsScreen(hospital: hospital),
+                            ),
+                          );
                         },
                         icon: const Icon(Icons.info_outline),
                         label: const Text("Details"),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.primaryColor,
+                          backgroundColor: AppColors.primary,
                           foregroundColor: Colors.white,
                         ),
                       ),
@@ -371,17 +377,27 @@ class _HospitalsScreenState extends State<HospitalsScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: AppTheme.accentColor.withOpacity(0.1),
+        color: AppColors.accent.withOpacity(0.1),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Text(
         service,
         style: TextStyle(
           fontSize: 12,
-          color: AppTheme.accentColor,
+          color: AppColors.accent,
           fontWeight: FontWeight.w500,
         ),
       ),
     );
+  }
+
+  void _makePhoneCall(String phoneNumber) async {
+    final Uri launchUri = Uri(
+      scheme: 'tel',
+      path: phoneNumber,
+    );
+    if (await canLaunchUrl(launchUri)) {
+      await launchUrl(launchUri);
+    }
   }
 }
